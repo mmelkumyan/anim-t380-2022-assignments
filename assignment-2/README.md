@@ -7,9 +7,9 @@
 
 ## Arguments
 
-- radius: Radius of the generated sphere.
-- step_size: Size of each step around sphere in degrees. A higher value yields a lower
-  resolution.,
+- `radius`: Radius of the generated sphere.
+- `step_size`: Size of each step around sphere in degrees. A higher value yields a lower
+  resolution.
 
 ## Example
 
