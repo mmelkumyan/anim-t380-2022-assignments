@@ -25,8 +25,8 @@ def create_parametric_sphere(radius, step_size):
     Parametric sphere equation: https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2Fwww.songho.ca%2Fopengl%2Ffiles%2Fgl_sphere01.png&f=1&nofb=1&ipt=9cbb49b70493462ee88c03662117bd09799c84ccdae76ded3fe82271a91ec09d&ipo=images
 
     :param radius: Radius of the generated sphere.
-    :param step_size: Size of each step around sphere. A higher value yields a lower
-        resolution. In degrees.
+    :param step_size: Size of each step around sphere in degrees. A higher value yields
+        a lower resolution.
     """
     print("Creating a parametric sphere...")
 
@@ -52,7 +52,7 @@ if __name__ == '__main__':
         description="This script creates a parametric sphere out of default cubes.")
     parser.add_argument("-radius", help="Radius of the sphere.", type=float, default=5)
     parser.add_argument("-step_size",
-                        help="Size of each step around sphere. "
+                        help="Size of each step around sphere in degrees. "
                              "A higher value yields a lower resolution.",
                         type=int, default=24)
     args = parser.parse_args()
@@ -61,5 +61,4 @@ if __name__ == '__main__':
 
     print(maya.cmds.ls(geometry=True))
     print("Done!")
-
     save()
