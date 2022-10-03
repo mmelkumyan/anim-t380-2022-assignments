@@ -3,7 +3,7 @@
 ## Description
 
 - This script creates a parametric sphere out of default cubes.
-- ![Parametric sphere](https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2Fwww.songho.ca%2Fopengl%2Ffiles%2Fgl_sphere01.png&f=1&nofb=1&ipt=9cbb49b70493462ee88c03662117bd09799c84ccdae76ded3fe82271a91ec09d&ipo=images)
+- ![Parametric sphere](./ui/parametric_sphere.png)
 
 ## Arguments
 
