@@ -1,4 +1,5 @@
 """Creates directory 'assets/$asset/maya/scenes'"""
+
 import os
 
 asset_name = os.getenv('asset')
