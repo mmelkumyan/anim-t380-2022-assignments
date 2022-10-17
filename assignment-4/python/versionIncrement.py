@@ -1,7 +1,14 @@
+"""Holds function for incrementing and saving maya file"""
+
 import maya.cmds
 
 
 def incrementAndSave():
+    """
+    Increments the file version by one and saves.
+    Assumes the following file naming conventions:
+        asset.task.artist.version.ext
+    """
     delimiter = "."
 
     # Get file name and split
