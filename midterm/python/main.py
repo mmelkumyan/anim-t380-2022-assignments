@@ -43,6 +43,29 @@ def load_naming_convention(naming_json_path: str):
         data = json.load(f)
     return data
 
+def get_filter_ranges(raw_filter):
+    clean_filter = {}
+    for key, value in raw_filter.items():
+        nums = value.split("-")
+
+        range = {
+            "min": -1,
+            "max": -1
+        }
+        num_cnt = len(nums)
+        if num_cnt == 1:
+            num = int(nums[0])
+            range["min"] = num
+            range["max"] = num
+        elif num_cnt == 2:
+            range["min"] = int(nums[0])
+            range["max"] = int(nums[1])
+        else:
+            raise ValueError(f"Invalid {key} range: {value}")
+
+        clean_filter[key] = range
+
+    return clean_filter
 
 def filter_images(directory, name_filter):
     # Gather all images in directory
@@ -53,9 +76,9 @@ def filter_images(directory, name_filter):
         if not file.is_file():
             continue
         # try: # TODO: Try except on invalid named images. Give warning for bad names
-        ext = file.suffix
 
-        scene, shot, frame = file.stem.split(delimiter)
+        ext = file.suffix
+        words = file.stem.split(delimiter)
         # file.
 
         images[file.name] = iio.imread(file)
@@ -72,11 +95,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     frame_dir = args.frames_dir
-    name_filter = vars(args).copy()
-    name_filter.pop("frames_dir")
+    raw_filter = vars(args).copy()
+    raw_filter.pop("frames_dir")
 
-    # name_filter = {arg: value for arg, value in vars(args).items() if
-    #                arg != "frames_dir"}
+    name_filter = get_filter_ranges(raw_filter)
 
     filter_images(args.frames_dir, name_filter)
     x = 0
