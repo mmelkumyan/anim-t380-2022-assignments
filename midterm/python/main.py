@@ -79,10 +79,18 @@ def filter_images(directory, name_filter):
 
         ext = file.suffix
         words = file.stem.split(delimiter)
-        # file.
+
+        if len(words) != len(name_filter):
+            print(f"Invalid named file found: {file.name}")
+            continue
+
+        for i, (word, range) in enumerate(name_filter.items()):
+            num = int(words[i])
+            if num < range["min"] or num > range["max"]:
+                continue
 
         images[file.name] = iio.imread(file)
-
+    return images
 
 if __name__ == '__main__':
     naming_words = load_naming_convention("naming.json")
@@ -100,5 +108,7 @@ if __name__ == '__main__':
 
     name_filter = get_filter_ranges(raw_filter)
 
-    filter_images(args.frames_dir, name_filter)
-    x = 0
+    filtered_images = filter_images(args.frames_dir, name_filter)
+    x=0
+
+# regex groupdicts in python docs
