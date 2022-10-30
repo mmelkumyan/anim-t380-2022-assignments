@@ -88,7 +88,6 @@ def gather_images_info(directory: str, name_filter: dict, ext_filter: str):
 
         # Get words from file name
         file_name_words = file.stem.split("_")
-
         # Ensure number of file name words is expected
         if len(file_name_words) != len(name_filter):
             print(f"Invalid named file found. Incorrect number of words: {file.name}")
@@ -103,7 +102,6 @@ def gather_images_info(directory: str, name_filter: dict, ext_filter: str):
                 print(f"Invalid named file found. "
                       f"Non-integer found: {file_name_words[i]} in {file.name}")
                 continue
-
             # Filter integers out of range
             if word_num < num_range["min"] or word_num > num_range["max"]:
                 continue
@@ -141,6 +139,18 @@ def find_black_images(images_info: dict, value_theshhold :float = .02) -> None:
             warning = f"Dark image - Average value of {avg_value*100:.2f}%"
             images_info[file_name]["warnings"].append(warning)
 
+def output_report(images_info: dict):
+    for file_name, im_info in images_info.items():
+        # Skip images without warnings
+        if not im_info["warnings"]:
+            continue
+
+        # Output warnings
+        print(file_name)
+        for warning in im_info["warnings"]:
+            print("\t" + warning)
+
+
 if __name__ == '__main__':
     naming_words, ext = load_naming_convention(NAMING_CONVENTION_TXT)
 
@@ -163,5 +173,7 @@ if __name__ == '__main__':
     find_small_images(info)
     find_black_images(info)
 
-    x=0
+    # Output
+    output_report(info)
+
 # regex groupdicts in python docs
