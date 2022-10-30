@@ -15,11 +15,10 @@ To identify a frame that is completely black, a python approach that is worth lo
 at is OpenImageIO. You could do it with ffmpeg, but it would be trickier.
 """
 import argparse
-import os
 from typing import List
+from pathlib import Path
 
 import imageio.v3 as iio
-from pathlib import Path
 import cv2
 
 # Pseudo-code:
@@ -48,7 +47,7 @@ def load_naming_convention(naming_txt_path: str) -> (List[str], str):
     :return: tuple containing list of naming words and extension
     """
     # Read file line
-    with open(naming_txt_path) as file:
+    with open(naming_txt_path, encoding="utf-8") as file:
         line = file.readline()
     # Extract name words and extension
     file_name, ext = line.split(".")
@@ -211,9 +210,10 @@ def main():
     raw_filter.pop("frames_dir")
     name_filter = get_filter_ranges(raw_filter)
 
-    images_info = get_images_info(args.frames_dir, name_filter, ext)
+    # Filter and read in image info
+    images_info = get_images_info(args.frames_dir, name_filter, extension)
 
-    # Check odd images
+    # Check for odd images
     find_small_images(images_info)
     find_black_images(images_info)
 
@@ -222,7 +222,7 @@ def main():
 
 
 if __name__ == '__main__':
-    naming_words, ext = load_naming_convention(NAMING_CONVENTION_TXT)
+    naming_words, extension = load_naming_convention(NAMING_CONVENTION_TXT)
 
     parser = argparse.ArgumentParser(
         description="This tool helps identify broken frames.")
