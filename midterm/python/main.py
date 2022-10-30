@@ -19,6 +19,7 @@ import os
 
 import imageio.v3 as iio
 from pathlib import Path
+import cv2
 
 
 # Pseudo-code:
@@ -35,6 +36,7 @@ from pathlib import Path
 # - Print contents of bad frames list
 
 NAMING_CONVENTION_TXT = "./naming.txt"
+BYTES_IN_MEGABYTE = 1048576
 
 def load_naming_convention(naming_txt_path: str):
     with open(naming_txt_path) as f:
@@ -111,9 +113,33 @@ def gather_images_info(directory: str, name_filter: dict, ext_filter: str):
         # Read in image
         images_info[file.name]["image"] = iio.imread(file)
         # Record file size
-        images_info[file.name]["size"] = file.stat().st_size
+        images_info[file.name]["size"] = file.stat().st_size / BYTES_IN_MEGABYTE
+        # List to hold image warnings
+        images_info[file.name]["warnings"] = []
+
     return images_info
 
+def find_small_images(images_info: dict, size_threshold_mb: int = .2):
+    for file_name, im_info in images_info.items():
+        size = im_info["size"]
+
+        # If below threshold, record warning
+        if size <= size_threshold_mb:
+            warning = f"Small image - Image size is {size:.6f} megabytes"
+            images_info[file_name]["warnings"].append(warning)
+
+
+def find_black_images(images_info: dict, value_theshhold :float = .02) -> None:
+    for file_name, im_info in images_info.items():
+        # Convert image to HSV
+        hsv_image = cv2.cvtColor(im_info["image"], cv2.COLOR_BGR2HSV)
+        # Get average value of image
+        avg_value = hsv_image[:,:,2].mean() / 255
+
+        # If below threshold, record warning
+        if avg_value <= value_theshhold:
+            warning = f"Dark image - Average value of {avg_value*100:.2f}%"
+            images_info[file_name]["warnings"].append(warning)
 
 if __name__ == '__main__':
     naming_words, ext = load_naming_convention(NAMING_CONVENTION_TXT)
@@ -131,8 +157,11 @@ if __name__ == '__main__':
 
     name_filter = get_filter_ranges(raw_filter)
 
-    images = gather_images_info(args.frames_dir, name_filter, ext)
+    info = gather_images_info(args.frames_dir, name_filter, ext)
 
+    # Check odd images
+    find_small_images(info)
+    find_black_images(info)
 
     x=0
 # regex groupdicts in python docs
