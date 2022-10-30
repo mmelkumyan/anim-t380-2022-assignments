@@ -14,9 +14,8 @@ Use a well-defined naming convention similar to one discussed in the lecture.
 To identify a frame that is completely black, a python approach that is worth looking
 at is OpenImageIO. You could do it with ffmpeg, but it would be trickier.
 """
-import json
 import argparse
-import copy
+import os
 
 import imageio.v3 as iio
 from pathlib import Path
@@ -35,11 +34,6 @@ from pathlib import Path
 # --- image is all black, or very close (image value < 5%. from HSV)
 # - Print contents of bad frames list
 
-
-# def load_naming_convention(naming_json_path: str):
-#     with open(naming_json_path) as f:
-#         data = json.load(f)
-#     return data
 NAMING_CONVENTION_TXT = "./naming.txt"
 
 def load_naming_convention(naming_txt_path: str):
@@ -75,18 +69,20 @@ def get_filter_ranges(raw_filter):
     return clean_filter
 
 
-def filter_images(directory: str, name_filter: dict, ext_filter: str):
-    # Gather all images in directory_
-    images = {}
+def gather_images_info(directory: str, name_filter: dict, ext_filter: str):
+    # Gather all images in directory
+    images_info = {}
+
     for file in Path(directory).iterdir():
         # Skip over directories
         if not file.is_file():
             continue
 
         # Filter file extensions
-        ext = file.suffix.strip(".")
-        if ext != ext_filter:
+        if not file.match(f'*.{ext_filter}'):
             continue
+
+        # TODO: try regex for matching!
 
         # Get words from file name
         file_name_words = file.stem.split("_")
@@ -110,9 +106,13 @@ def filter_images(directory: str, name_filter: dict, ext_filter: str):
             if word_num < num_range["min"] or word_num > num_range["max"]:
                 continue
 
+        # Create dictionary to hold image info
+        images_info[file.name] = {}
         # Read in image
-        images[file.name] = iio.imread(file)
-    return images
+        images_info[file.name]["image"] = iio.imread(file)
+        # Record file size
+        images_info[file.name]["size"] = file.stat().st_size
+    return images_info
 
 
 if __name__ == '__main__':
@@ -131,6 +131,8 @@ if __name__ == '__main__':
 
     name_filter = get_filter_ranges(raw_filter)
 
-    filtered_images = filter_images(args.frames_dir, name_filter, ext)
+    images = gather_images_info(args.frames_dir, name_filter, ext)
 
+
+    x=0
 # regex groupdicts in python docs
