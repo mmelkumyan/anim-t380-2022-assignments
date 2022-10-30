@@ -16,11 +16,11 @@ at is OpenImageIO. You could do it with ffmpeg, but it would be trickier.
 """
 import argparse
 import os
+from typing import List
 
 import imageio.v3 as iio
 from pathlib import Path
 import cv2
-
 
 # Pseudo-code:
 #
@@ -38,40 +38,67 @@ import cv2
 NAMING_CONVENTION_TXT = "./naming.txt"
 BYTES_IN_MEGABYTE = 1048576
 
-def load_naming_convention(naming_txt_path: str):
-    with open(naming_txt_path) as f:
-        line = f.readline()
+
+def load_naming_convention(naming_txt_path: str) -> (List[str], str):
+    """
+    Loads naming conventions from .txt file.
+    Splits naming words with '_' character.
+
+    :param naming_txt_path: Relative path to .txt file.
+    :return: tuple containing list of naming words and extension
+    """
+    # Read file line
+    with open(naming_txt_path) as file:
+        line = file.readline()
+    # Extract name words and extension
     file_name, ext = line.split(".")
     name_words = file_name.split("_")
-    return  name_words, ext
+    return name_words, ext
 
 
-def get_filter_ranges(raw_filter):
+def get_filter_ranges(raw_filter: dict) -> dict:
+    """
+    Converts user input filter ranges into dictionary
+
+    :param raw_filter: Dictionary containing filter for each file name word.
+        Ex: {'scene': '001', 'frame': '1000-1005'}
+    :return: Dictionary containing integer ranges for each file name item.
+        Ex: {'scene': {'min': 1, 'max': 1}, 'frame': {'min': 1000, 'max': 1005}}
+    """
     clean_filter = {}
-    for key, value in raw_filter.items():
-        nums = value.split("-")
+    for name_word, range_str in raw_filter.items():
+        num_strs = range_str.split("-")
 
-        range = {
-            "min": -1,
-            "max": -1
-        }
-        num_cnt = len(nums)
-        if num_cnt == 1:
-            num = int(nums[0])
-            range["min"] = num
-            range["max"] = num
-        elif num_cnt == 2:
-            range["min"] = int(nums[0])
-            range["max"] = int(nums[1])
+        num_range = {}
+        cnt = len(num_strs)
+        if cnt == 1:
+            num_range["min"] = int(num_strs[0])
+            num_range["max"] = int(num_strs[0])
+        elif cnt == 2:
+            num_range["min"] = int(num_strs[0])
+            num_range["max"] = int(num_strs[1])
         else:
-            raise ValueError(f"Invalid {key} range: {value}")
-
-        clean_filter[key] = range
+            raise ValueError(f"Invalid {name_word} range: {range_str}")
+        clean_filter[name_word] = num_range
 
     return clean_filter
 
 
-def gather_images_info(directory: str, name_filter: dict, ext_filter: str):
+def get_images_info(directory: str, name_filter: dict, ext_filter: str) -> dict:
+    """
+    Filters out desired images in directory and returns dictionary of image info.
+    Output dictionary format:
+    "<image name>" : {
+        "image": numpy image array
+        "size": size of image in megabytes
+        "warnings": empty list to add warnings to
+    }
+
+    :param directory:
+    :param name_filter: Dictionary containing number range for each name word
+    :param ext_filter: File extension of images
+    :return: Dictionary containing information of each image.
+    """
     # Gather all images in directory
     images_info = {}
 
@@ -83,8 +110,6 @@ def gather_images_info(directory: str, name_filter: dict, ext_filter: str):
         # Filter file extensions
         if not file.match(f'*.{ext_filter}'):
             continue
-
-        # TODO: try regex for matching!
 
         # Get words from file name
         file_name_words = file.stem.split("_")
@@ -117,7 +142,17 @@ def gather_images_info(directory: str, name_filter: dict, ext_filter: str):
 
     return images_info
 
-def find_small_images(images_info: dict, size_threshold_mb: int = .2):
+
+def find_small_images(images_info: dict, size_threshold_mb: int = .2) -> None:
+    """
+    Checks each image in images_info to see if file size is below threshold and adds
+    warning if so.
+
+    :param images_info: Dictionary containing information of each image
+    :param size_threshold_mb: Threshold for image size in megabytes. Images below
+        this size are given a warning.
+        Default is 0.2 MB.
+    """
     for file_name, im_info in images_info.items():
         size = im_info["size"]
 
@@ -127,19 +162,35 @@ def find_small_images(images_info: dict, size_threshold_mb: int = .2):
             images_info[file_name]["warnings"].append(warning)
 
 
-def find_black_images(images_info: dict, value_theshhold :float = .02) -> None:
+def find_black_images(images_info: dict, value_threshold: float = .02) -> None:
+    """
+    Checks each image in images_info to see if value is below threshold and adds warning
+    if so.
+
+    :param images_info: Dictionary containing information of each image
+    :param value_threshold: Float from 0-1 threshold for image value. Images with an
+        average pixel value below this are given a warning.
+        0.0 is a black image, 0.5 is a 50% grey image, and 1.0 is a white image.
+        Default is 0.02.
+    """
     for file_name, im_info in images_info.items():
         # Convert image to HSV
         hsv_image = cv2.cvtColor(im_info["image"], cv2.COLOR_BGR2HSV)
         # Get average value of image
-        avg_value = hsv_image[:,:,2].mean() / 255
+        avg_value = hsv_image[:, :, 2].mean() / 255
 
         # If below threshold, record warning
-        if avg_value <= value_theshhold:
-            warning = f"Dark image - Average value of {avg_value*100:.2f}%"
+        if avg_value <= value_threshold:
+            warning = f"Dark image - Average value of {avg_value * 100:.2f}%"
             images_info[file_name]["warnings"].append(warning)
 
-def output_report(images_info: dict):
+
+def print_report(images_info: dict) -> None:
+    """
+    Outputs warnings of each image to command line.
+
+    :param images_info: Dictionary containing information of each image
+    """
     for file_name, im_info in images_info.items():
         # Skip images without warnings
         if not im_info["warnings"]:
@@ -149,6 +200,25 @@ def output_report(images_info: dict):
         print(file_name)
         for warning in im_info["warnings"]:
             print("\t" + warning)
+
+
+def main():
+    """
+    Filters each image in directory then prints warnings for abnormal images
+    """
+    # Convert input ranges into integers
+    raw_filter = vars(args).copy()
+    raw_filter.pop("frames_dir")
+    name_filter = get_filter_ranges(raw_filter)
+
+    images_info = get_images_info(args.frames_dir, name_filter, ext)
+
+    # Check odd images
+    find_small_images(images_info)
+    find_black_images(images_info)
+
+    # Output
+    print_report(images_info)
 
 
 if __name__ == '__main__':
@@ -161,19 +231,6 @@ if __name__ == '__main__':
         parser.add_argument(f"--{word}", help="...", type=str)
     args = parser.parse_args()
 
-    frame_dir = args.frames_dir
-    raw_filter = vars(args).copy()
-    raw_filter.pop("frames_dir")
-
-    name_filter = get_filter_ranges(raw_filter)
-
-    info = gather_images_info(args.frames_dir, name_filter, ext)
-
-    # Check odd images
-    find_small_images(info)
-    find_black_images(info)
-
-    # Output
-    output_report(info)
+    main()
 
 # regex groupdicts in python docs
