@@ -11,9 +11,10 @@
 
 ### Dependencies
 
-- Found in `requirements.txt`
-- A venv is provided with all packages included. To run it
-  type `source venv/bin/activate`
+- Found in `requirements.txt`.
+    - Pip installing `opencv-python` and `numpy` should satisfy everything.
+- A venv is provided with all packages included. To run it unzip `venv.zip` and
+  type `source venv/bin/activate`.
     - Then type `python python/brokenFrames.py -h` for help.
 
 ### Arguments
