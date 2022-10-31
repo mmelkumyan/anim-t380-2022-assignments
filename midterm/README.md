@@ -58,3 +58,4 @@ Optional arguments:
        Small image - Image size is 0.005023 megabytes
        Dark image - Average value of 0.44%
   ```
+  `warningImageThumbnails.jpg` will contain the thumbnails of the bad frames. 
