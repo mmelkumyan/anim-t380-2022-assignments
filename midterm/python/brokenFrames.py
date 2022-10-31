@@ -1,25 +1,12 @@
 """
-Problem 3
-Overview:
-The compositing supervisor is requesting a tool to help identify broken frames.
-Create a utility that:
-
-- collects a sequence of frames based on a naming convention
-- identifies frames either vastly different in filesize or are completely black
-- generates a report that lists potential frames to be reviewed (text, html, or email)
-- Extra credit feature: combine thumbnails in a single grid image for quick reference
-
-Hints:
-Use a well-defined naming convention similar to one discussed in the lecture.
-To identify a frame that is completely black, a python approach that is worth looking
-at is OpenImageIO. You could do it with ffmpeg, but it would be trickier.
+Broken Frames Analyzer
 """
 import argparse
-from typing import List
 from pathlib import Path
+from typing import List
 
-import numpy as np
 import cv2
+import numpy as np
 
 NAMING_CONVENTION_TXT = "./naming.txt"
 BYTES_IN_MEGABYTE = 1048576
@@ -241,8 +228,8 @@ def main():
     images_info = get_images_info(args.frames_dir, name_filter, extension)
 
     # Check for odd images
-    find_small_images(images_info)
-    find_black_images(images_info)
+    find_small_images(images_info, args.size_thresh)
+    find_black_images(images_info, args.value_thresh)
 
     # Output
     print_report(images_info)
@@ -253,12 +240,20 @@ if __name__ == '__main__':
     naming_words, extension = load_naming_convention(NAMING_CONVENTION_TXT)
 
     parser = argparse.ArgumentParser(
-        description="This tool helps identify broken frames.")
+        description="This tool helps identify broken frames. "
+                    "The naming conventions of the frames can be set in 'naming.txt'. "
+                    "This can be used to filter out which frames to analyze. "
+                    "Ex: With naming convention 'scene_shot_frame.png', you may add the parameter "
+                    "'--scene 001' or '--shot 1000-1005")
     parser.add_argument("frames_dir", help="Directory of frames", type=str)
+    parser.add_argument("--value_thresh", help="Threshold of value for dark frames."
+                                               "Ex: '.01'", type=float)
+    parser.add_argument("--size_thresh", help="Threshold of file size in MB."
+                                              "Ex: 5.0", type=float)
     for word in naming_words:
-        parser.add_argument(f"--{word}", help="...", type=str)
+        parser.add_argument(f"--{word}", help=f"Filter the {word} # of the frame. "
+                                              f"Ex: '--{word} 001' or  '--{word} 5-10'",
+                            type=str)
     args = parser.parse_args()
 
     main()
-
-# regex groupdicts in python docs
