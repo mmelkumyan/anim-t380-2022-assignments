@@ -9,6 +9,13 @@
     - Dark/ black frames
     - Frames with small files sizes
 
+### Dependencies
+
+- Found in `requirements.txt`
+- A venv is provided with all packages included. To run it
+  type `source venv/bin/activate`
+    - Then type `python python/brokenFrames.py -h` for help.
+
 ### Arguments
 
 Positional arguments:
