@@ -18,22 +18,8 @@ import argparse
 from typing import List
 from pathlib import Path
 
-import imageio.v3 as iio
-import cv2
-
-# Pseudo-code:
-#
-# - input parameters: frame directory, filters,
-#
-# - Set frame filter. {scene}_{shot}_{frame# starting at 1000}.{ext}
-# -- Can filter for scene, shot, frame range, or combo of all 3
-# - Loop through each image in frames dir
-# -- Load in with OpenImageIo
-# -- Check for irregularities. If match, add to bad frames list:
-# --- file size is vastly different from previous (+- at least 25%?)
-# --- image is all black, or very close (image value < 5%. from HSV)
-# - Print contents of bad frames list
 import numpy as np
+import cv2
 
 NAMING_CONVENTION_TXT = "./naming.txt"
 BYTES_IN_MEGABYTE = 1048576
@@ -134,7 +120,7 @@ def get_images_info(directory: str, name_filter: dict, ext_filter: str) -> dict:
         # Create dictionary to hold image info
         images_info[file.name] = {}
         # Read in image
-        images_info[file.name]["image"] = iio.imread(file)
+        images_info[file.name]["image"] = cv2.imread(str(file))
         # Record file size
         images_info[file.name]["size"] = file.stat().st_size / BYTES_IN_MEGABYTE
         # List to hold image warnings
