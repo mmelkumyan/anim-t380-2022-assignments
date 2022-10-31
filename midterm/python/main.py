@@ -202,38 +202,44 @@ def print_report(images_info: dict) -> None:
             print("\t" + warning)
 
 
-def create_warning_image_grid(images_info: dict):
-    GRID_WIDTH = 4  # Number of thumbnails per row
-    GRID_IM_WIDTH = 100  # Width of each thumbnail
-    EXTRA_SPACE_COLOR = (128,128,128,255)
+def create_warning_image_grid(images_info: dict,
+                              file_name: str = "warningImageThumbnails.jpg") -> None:
+    """
+    Outputs a grid of thumbnails of images with warnings to the current directory.
+
+    :param images_info: Dictionary containing information of each image
+    :param file_name: Name of the grid image to save
+    """
+    grid_width = 4  # Number of thumbnails per row
+    grid_im_width = 100  # Width of each thumbnail
 
     # Filter out images with warnings
     warn_images = [v["image"] for k, v in images_info.items() if v["warnings"]]
 
     # Shrink images down
     im_height, im_width, im_depth = warn_images[0].shape
-    grid_im_height = int(GRID_IM_WIDTH * im_height / im_width)
-    new_dims = GRID_IM_WIDTH, grid_im_height
+    grid_im_height = int(grid_im_width * im_height / im_width)
+    new_dims = grid_im_width, grid_im_height
     grid_images = [cv2.resize(im, new_dims, interpolation=cv2.INTER_LINEAR)
                    for im in warn_images]
 
     # Add extra blank space if grid is not square
-    missing_cnt = len(grid_images) % GRID_WIDTH
+    missing_cnt = len(grid_images) % grid_width
     for _ in range(missing_cnt):
-        blank_im = np.zeros([grid_im_height, GRID_IM_WIDTH, im_depth], dtype=np.uint8)
+        blank_im = np.zeros([grid_im_height, grid_im_width, im_depth], dtype=np.uint8)
         blank_im.fill(255)
         grid_images.append(blank_im)
 
     # Combine images
     rows = []
-    row_cnt = len(grid_images) // GRID_WIDTH
+    row_cnt = len(grid_images) // grid_width
     for i in range(row_cnt):
-        start, end = i * GRID_WIDTH, (i + 1) * GRID_WIDTH
+        start, end = i * grid_width, (i + 1) * grid_width
         rows.append(cv2.hconcat(grid_images[start:end]))
     grid = cv2.vconcat(rows)
 
     # Save grid image
-    cv2.imwrite("./warningImageThumbnails.jpg", grid)
+    cv2.imwrite(f"./{file_name}", grid)
 
 
 def main():
