@@ -253,7 +253,7 @@ if __name__ == '__main__':
                     "'--scene 001' or '--shot 1000-1005")
     parser.add_argument("frames_dir", help="Directory of frames", type=str)
     parser.add_argument("--value_thresh", help="Threshold of value for dark frames."
-                                               "Default is '0.01' (1% black)",
+                                               "Default is '0.0' (completely black)",
                         type=float, default=0.01)
     parser.add_argument("--size_thresh", help="Threshold of file size in MB."
                                               "Defaults is '0.2' (0.2MB)",
