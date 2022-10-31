@@ -95,6 +95,7 @@ def get_images_info(directory: str, name_filter: dict, ext_filter: str) -> dict:
             continue
 
         # Filter number ranges on file name
+        failed = False
         for i, num_range in enumerate(name_filter.values()):
             # Ensure word is integer
             try:
@@ -102,11 +103,15 @@ def get_images_info(directory: str, name_filter: dict, ext_filter: str) -> dict:
             except ValueError:
                 print(f"Invalid named file found. "
                       f"Non-integer found: {file_name_words[i]} in {file.name}")
-                continue
+                failed = True
+                break
             # Filter integers out of range
             if num_range and (
                     word_num < num_range["min"] or word_num > num_range["max"]):
-                continue
+                failed = True
+                break
+        if failed:
+            continue
 
         # Create dictionary to hold image info
         images_info[file.name] = {}
@@ -192,6 +197,8 @@ def create_warning_image_grid(images_info: dict,
 
     # Filter out images with warnings
     warn_images = [v["image"] for k, v in images_info.items() if v["warnings"]]
+    if not warn_images:
+        return
 
     # Shrink images down
     im_height, im_width, im_depth = warn_images[0].shape
