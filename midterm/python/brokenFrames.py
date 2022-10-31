@@ -39,9 +39,12 @@ def get_filter_ranges(raw_filter: dict) -> dict:
         Ex: {'scene': {'min': 1, 'max': 1}, 'frame': {'min': 1000, 'max': 1005}}
     """
     clean_filter = {}
-    for name_word, range_str in raw_filter.items():
+    for i, (name_word, range_str) in enumerate(raw_filter.items()):
+        clean_filter[i] = {
+            "name": name_word
+        }
         if not range_str:
-            clean_filter[name_word] = None
+            clean_filter[i]["range"] = None
             continue
         num_strs = range_str.split("-")
 
@@ -55,7 +58,7 @@ def get_filter_ranges(raw_filter: dict) -> dict:
             num_range["max"] = int(num_strs[1])
         else:
             raise ValueError(f"Invalid {name_word} range: {range_str}")
-        clean_filter[name_word] = num_range
+        clean_filter[i]["range"] = num_range
 
     return clean_filter
 
@@ -87,30 +90,8 @@ def get_images_info(directory: str, name_filter: dict, ext_filter: str) -> dict:
         if not file.match(f'*.{ext_filter}'):
             continue
 
-        # Get words from file name
-        file_name_words = file.stem.split("_")
-        # Ensure number of file name words is expected
-        if len(file_name_words) != len(name_filter):
-            print(f"Invalid named file found. Incorrect number of words: {file.name}")
-            continue
-
         # Filter number ranges on file name
-        failed = False
-        for i, num_range in enumerate(name_filter.values()):
-            # Ensure word is integer
-            try:
-                word_num = int(file_name_words[i])
-            except ValueError:
-                print(f"Invalid named file found. "
-                      f"Non-integer found: {file_name_words[i]} in {file.name}")
-                failed = True
-                break
-            # Filter integers out of range
-            if num_range and (
-                    word_num < num_range["min"] or word_num > num_range["max"]):
-                failed = True
-                break
-        if failed:
+        if not is_name_in_range(file, name_filter):
             continue
 
         # Create dictionary to hold image info
@@ -123,6 +104,42 @@ def get_images_info(directory: str, name_filter: dict, ext_filter: str) -> dict:
         images_info[file.name]["warnings"] = []
 
     return images_info
+
+
+def is_name_in_range(file: Path, name_filter: dict) -> bool:
+    """
+    Checks if file name is in filter range
+
+    :param file: File to check
+    :param name_filter: Dict containing min and max ranges for each name word
+    :return: True if name is in range, false if not
+    """
+    # Get words from file name
+    file_name_words = file.stem.split("_")
+
+    # Ensure number of file name words is expected
+    if len(file_name_words) != len(name_filter):
+        print(f"Invalid named file found. Incorrect number of words: {file.name}")
+        return False
+
+    for pos, values in name_filter.items():
+        # Make sure there is a filter for that word
+        num_range = values["range"]
+        if not num_range:
+            continue
+
+        # Ensure word is integer
+        try:
+            word_num = int(file_name_words[pos])
+        except ValueError:
+            print(f"Invalid named file found. "
+                  f"Non-integer found: {file_name_words[pos]} in {file.name}")
+            return False
+
+        # Check if out of range
+        if word_num < num_range["min"] or word_num > num_range["max"]:
+            return False
+    return True
 
 
 def find_small_images(images_info: dict, size_threshold_mb: int = .2) -> None:
