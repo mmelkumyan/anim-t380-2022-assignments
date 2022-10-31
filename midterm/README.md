@@ -28,7 +28,7 @@ Optional arguments:
 - `value_thresh` - Threshold of value for dark frames
     - Ex. `--value_thresh 0.0` gives warnings for completely black frames.
     - Ex. `--value_thresh 0.01` gives warnings for frames with an average value of 1%.
-- `size_thresh` - Threshold of file size in MB. Ex.
+- `size_thresh` - Threshold of file size in MB.
     - Ex. `--size_thresh 20` gives warnings for frames below 20MB.
 - Filter frame name depending on naming convention set in `naming.txt`. Can filter a
   single value or a range.
@@ -39,23 +39,27 @@ Optional arguments:
         - `--frame #-#`
         - Where `#-#` is a range such as `001-005` or a single value such as `001`
 
-### Example
+### Examples
 
 - Naming conventions in `naming.txt` is set as `scene_shot_frame.png`.
     - This gives optional filtering arguments `--scene`, `--shot`, and `--frame`
     - Ex 1.) Run command `test_frames --scene 001 --shot 005`
         - Analyzes scene 1 shot 5 only
-    - Ex 1.) Run command `test_frames --frames 1000-1100`
+    - Ex 2.) Run command `test_frames --frames 1000-1100`
         - Analyzes frames 1000-1100 only
-    - Possible output:
-
-  ```
-  001_005_1003.png
-       Small image - Image size is 0.086721 megabytes
+    - Ex 3.) Run command `test_frames --value_thresh 0.05 --size_thresh 5`
+        - Checks for frames below a value of 5% (very dark but not competely) and a size
+          of 5 MB.
+- Possible output:
+  ```text
+  001_005_1002.png
+      Small image - Image size is 0.002315 megabytes
+      Dark image - Average value of 0.00%
   001_005_1004.png
-       Small image - Image size is 0.062908 megabytes
+      Small image - Image size is 0.000496 megabytes
   001_005_1005.png
-       Small image - Image size is 0.005023 megabytes
-       Dark image - Average value of 0.44%
+      Small image - Image size is 0.005023 megabytes
+      Dark image - Average value of 0.44%
   ```
-  `warningImageThumbnails.jpg` will contain the thumbnails of the bad frames. 
+    - `warningImageThumbnails.jpg` will contain the thumbnails of the bad frames.
+        - Ex:  ![Warning image thumbnails](ui/warningImageThumbnailsExample.jpg)
