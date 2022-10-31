@@ -40,6 +40,9 @@ def get_filter_ranges(raw_filter: dict) -> dict:
     """
     clean_filter = {}
     for name_word, range_str in raw_filter.items():
+        if not range_str:
+            clean_filter[name_word] = None
+            continue
         num_strs = range_str.split("-")
 
         num_range = {}
@@ -101,7 +104,8 @@ def get_images_info(directory: str, name_filter: dict, ext_filter: str) -> dict:
                       f"Non-integer found: {file_name_words[i]} in {file.name}")
                 continue
             # Filter integers out of range
-            if word_num < num_range["min"] or word_num > num_range["max"]:
+            if num_range and (
+                    word_num < num_range["min"] or word_num > num_range["max"]):
                 continue
 
         # Create dictionary to hold image info
@@ -222,6 +226,8 @@ def main():
     # Convert input ranges into integers
     raw_filter = vars(args).copy()
     raw_filter.pop("frames_dir")
+    raw_filter.pop("value_thresh")
+    raw_filter.pop("size_thresh")
     name_filter = get_filter_ranges(raw_filter)
 
     # Filter and read in image info
@@ -247,9 +253,11 @@ if __name__ == '__main__':
                     "'--scene 001' or '--shot 1000-1005")
     parser.add_argument("frames_dir", help="Directory of frames", type=str)
     parser.add_argument("--value_thresh", help="Threshold of value for dark frames."
-                                               "Ex: '.01'", type=float)
+                                               "Default is '0.01' (1% black)",
+                        type=float, default=0.01)
     parser.add_argument("--size_thresh", help="Threshold of file size in MB."
-                                              "Ex: 5.0", type=float)
+                                              "Defaults is '0.2' (0.2MB)",
+                        type=float, default=.2)
     for word in naming_words:
         parser.add_argument(f"--{word}", help=f"Filter the {word} # of the frame. "
                                               f"Ex: '--{word} 001' or  '--{word} 5-10'",
