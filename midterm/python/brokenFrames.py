@@ -208,7 +208,7 @@ def create_warning_image_grid(images_info: dict,
                    for im in warn_images]
 
     # Add extra blank space if grid is not square
-    missing_cnt = len(grid_images) % grid_width
+    missing_cnt = grid_width - len(grid_images) % grid_width
     for _ in range(missing_cnt):
         blank_im = np.zeros([grid_im_height, grid_im_width, im_depth], dtype=np.uint8)
         blank_im.fill(255)
