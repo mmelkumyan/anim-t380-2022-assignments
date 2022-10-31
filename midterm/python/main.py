@@ -33,6 +33,7 @@ import cv2
 # --- file size is vastly different from previous (+- at least 25%?)
 # --- image is all black, or very close (image value < 5%. from HSV)
 # - Print contents of bad frames list
+import numpy as np
 
 NAMING_CONVENTION_TXT = "./naming.txt"
 BYTES_IN_MEGABYTE = 1048576
@@ -201,6 +202,40 @@ def print_report(images_info: dict) -> None:
             print("\t" + warning)
 
 
+def create_warning_image_grid(images_info: dict):
+    GRID_WIDTH = 4  # Number of thumbnails per row
+    GRID_IM_WIDTH = 100  # Width of each thumbnail
+    EXTRA_SPACE_COLOR = (128,128,128,255)
+
+    # Filter out images with warnings
+    warn_images = [v["image"] for k, v in images_info.items() if v["warnings"]]
+
+    # Shrink images down
+    im_height, im_width, im_depth = warn_images[0].shape
+    grid_im_height = int(GRID_IM_WIDTH * im_height / im_width)
+    new_dims = GRID_IM_WIDTH, grid_im_height
+    grid_images = [cv2.resize(im, new_dims, interpolation=cv2.INTER_LINEAR)
+                   for im in warn_images]
+
+    # Add extra blank space if grid is not square
+    missing_cnt = len(grid_images) % GRID_WIDTH
+    for _ in range(missing_cnt):
+        blank_im = np.zeros([grid_im_height, GRID_IM_WIDTH, im_depth], dtype=np.uint8)
+        blank_im.fill(255)
+        grid_images.append(blank_im)
+
+    # Combine images
+    rows = []
+    row_cnt = len(grid_images) // GRID_WIDTH
+    for i in range(row_cnt):
+        start, end = i * GRID_WIDTH, (i + 1) * GRID_WIDTH
+        rows.append(cv2.hconcat(grid_images[start:end]))
+    grid = cv2.vconcat(rows)
+
+    # Save grid image
+    cv2.imwrite("./warningImageThumbnails.jpg", grid)
+
+
 def main():
     """
     Filters each image in directory then prints warnings for abnormal images
@@ -219,6 +254,7 @@ def main():
 
     # Output
     print_report(images_info)
+    create_warning_image_grid(images_info)
 
 
 if __name__ == '__main__':
