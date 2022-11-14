@@ -49,18 +49,15 @@ class MyMayaWidget(QWidget):
 
         # Set the UI display title and size
         self.setWindowTitle('Parametric Sphere Generator')
-        self.resize(333, 76)
+        self.resize(316, 105)
 
         # Create a button with the text 'Test'
         # You can see all the available widgets available
         # in PySide here:
         # https://srinikom.github.io/pyside-docs/PySide/QtGui/index.html
         self.generate_button = QPushButton('Generate', self)
-
-        # When the button is clicked, connect a signal to run
-        # the function below
+        self.generate_button.setGeometry(QRect(230, 70, 75, 23))
         self.generate_button.clicked.connect(self.generate_onClicked)
-        self.generate_button.setGeometry(QRect(230, 40, 75, 23))
 
         # Create radius text label
         self.radius_label = QLabel(self)
@@ -81,18 +78,43 @@ class MyMayaWidget(QWidget):
         self.radius_val.setReadOnly(True)
         self.radius_val.setText(str(self.radius_slider.value()))
 
+        # Create step text label
+        self.step_label = QLabel(self)
+        self.step_label.setGeometry(QRect(10, 40, 47, 13))
+        self.step_label.setText("Step size")
+
+        # Create step slider
+        self.step_slider = QSlider(self)
+        self.step_slider.setGeometry(QRect(60, 40, 160, 22))
+        self.step_slider.setOrientation(Qt.Horizontal)
+        self.step_slider.setRange(15, 90)
+        self.step_slider.setValue(24)
+        self.step_slider.valueChanged.connect(self.update_step)
+
+        # Create step value label
+        self.step_val = QLineEdit(self)
+        self.step_val.setGeometry(QRect(230, 40, 71, 20))
+        self.step_val.setReadOnly(True)
+        self.step_val.setText(str(self.step_slider.value()))
+
     def update_radius(self):
         """
         Updates the value of radius value label on slider change
         """
         self.radius_val.setText(str(self.radius_slider.value()))
 
+    def update_step(self):
+        """
+        Updates the value of step size value label on slider change
+        """
+        self.step_val.setText(str(self.step_slider.value()))
+
     def generate_onClicked(self):
         """
         Generates a parametric sphere using the given radius value
         """
         print("Generate clicked!")
-        create_parametric_sphere(self.radius_slider.value(), 24)
+        create_parametric_sphere(self.radius_slider.value(), self.step_slider.value())
 
 
 my_widget = MyMayaWidget()
