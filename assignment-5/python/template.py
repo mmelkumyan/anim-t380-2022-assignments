@@ -43,29 +43,56 @@ class MyMayaWidget(QWidget):
     def __init__(self, *args, **kwargs):
         super(MyMayaWidget, self).__init__(*args, **kwargs)
 
-        # Parent widget under Maya main window        
+        # Parent widget under Maya main window
         self.setParent(mayaMainWindow)
         self.setWindowFlags(Qt.Window)
 
-        # Set the UI display title and size    
+        # Set the UI display title and size
         self.setWindowTitle('Parametric Sphere Generator')
-        self.setGeometry(50, 50, 250, 150)
+        self.resize(333, 76)
 
         # Create a button with the text 'Test'
         # You can see all the available widgets available
         # in PySide here:
         # https://srinikom.github.io/pyside-docs/PySide/QtGui/index.html
-        self.generate_button = QPushButton('Test', self)
+        self.generate_button = QPushButton('Generate', self)
 
         # When the button is clicked, connect a signal to run
         # the function below
         self.generate_button.clicked.connect(self.generate_onClicked)
+        self.generate_button.setGeometry(QRect(230, 40, 75, 23))
+
+        # Create radius text label
+        self.radius_label = QLabel(self)
+        self.radius_label.setGeometry(QRect(10, 10, 47, 13))
+        self.radius_label.setText("Radius")
+
+        # Create radius slider
+        self.radius_slider = QSlider(self)
+        self.radius_slider.setGeometry(QRect(60, 10, 160, 22))
+        self.radius_slider.setOrientation(Qt.Horizontal)
+        self.radius_slider.setRange(1, 20)
+        self.radius_slider.setValue(5)
+        self.radius_slider.valueChanged.connect(self.update_radius)
+
+        # Create radius value label
+        self.radius_val = QLineEdit(self)
+        self.radius_val.setGeometry(QRect(230, 10, 71, 20))
+        self.radius_val.setReadOnly(True)
+        self.radius_val.setText(str(self.radius_slider.value()))
+
+    def update_radius(self):
+        """
+        Updates the value of radius value label on slider change
+        """
+        self.radius_val.setText(str(self.radius_slider.value()))
 
     def generate_onClicked(self):
-        # Add code to run when the button is clicked here.
-        # maya.cmds...
-        print("Clicked!")
-        create_parametric_sphere(5, 5)
+        """
+        Generates a parametric sphere using the given radius value
+        """
+        print("Generate clicked!")
+        create_parametric_sphere(self.radius_slider.value(), 24)
 
 
 my_widget = MyMayaWidget()
