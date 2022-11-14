@@ -1,18 +1,15 @@
-TODO: update this readme
-# Assignment 4
+# Assignment 2
 
-## Maya File Version Incrementer
+## Description
 
-### Description
+- This script creates a parametric sphere out of default cubes.
+- ![Parametric sphere](./ui/parametric_sphere.png)
 
-- This script increments the Maya file version by one and saves the file with the
-  updated name.
+## Buttons
 
-### Arguments
+- `Radius slider`: Sets the radius of the sphere
+- `Generate`: Generates a sphere of cubes with the given radius.
 
-- None
+## Example
 
-### Example
-
-- If the current maya file is named `dragon.model.mmelk.1.ma`, running this script will
-  save the file with the new name `dragon.model.mmelk.2.ma`
+- ![Example](./ui/example.png)
