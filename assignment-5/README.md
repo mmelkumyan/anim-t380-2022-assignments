@@ -1,4 +1,4 @@
-# Assignment 2
+# Assignment 5
 
 ## Description
 
@@ -8,7 +8,9 @@
 ## Buttons
 
 - `Radius slider`: Sets the radius of the sphere
-- `Generate`: Generates a sphere of cubes with the given radius.
+- `Step size slider`: Size of each step around sphere in degrees. A higher value yields
+  a lower resolution.
+- `Generate`: Generates a sphere of cubes with the given radius and step size.
 
 ## Example
 
